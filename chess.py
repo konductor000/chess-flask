@@ -239,10 +239,10 @@ class Chess:
 
         white_moves, black_moves = self.get_possible_moves()
 
-        for x in range(8):
-            for fig in self.board[x]:
-                print(fig.color, fig.figure, fig.x, fig.y)
-                print(fig.moves)
+        # for x in range(8):
+        #     for fig in self.board[x]:
+        #         print(fig.color, fig.figure, fig.x, fig.y)
+        #         print(fig.moves)
 
     def get_possible_moves(self):
         black_moves = []
@@ -276,36 +276,114 @@ class Chess:
 
         return white_moves, black_moves
 
-    def make_move(self, x, y, x1, y1):
-        figure = self.board[x][y].figure
-        color = self.board[x][y].figure
-        self.board[x][y] = self.Cell(x, y)
-        self.board[x1][y1] = self.Cell(x1, y1, figure, color)
-
-        white_moves, black_moves = self.get_possible_moves()
-
+    def check(self, cnt):
         for x in range(8):
             for fig in self.board[x]:
-                print(fig.color, fig.figure, fig.x, fig.y)
-                print(fig.moves)
+                for move in fig.moves:
+                    figure = self.board[move[0]][move[1]]
+                    if figure.figure == "king":
+                        if (cnt == 0 and figure.color == "white") or (cnt == 1 and figure.color == "black"):
+                            print("INCORRECT")
+                            return True
 
-        self.print_board()
+        return False
+
+    def make_move(self, pos1, pos2, cnt):
+        x1, y1 = int(pos1[1]) - 1, ord(pos1[0]) - ord('a')
+        x2, y2 = int(pos2[1]) - 1, ord(pos2[0]) - ord('a')
+        # print(x1, y1, x2, y2)
+
+        fig = Board.board[x1][y1]
+        # print(fig.moves, fig.figure, fig.color, fig.x, fig.y)
+        # print(cnt)
+        # print(cnt == 0, fig.color == "white", (x2, y2) in fig.moves)
+
+        if cnt == 0 and fig.color == "white" and (x2, y2) in fig.moves or \
+                cnt == 1 and fig.color == "black" and (x2, y2) in fig.moves:
+            figure = fig.figure
+            color = fig.color
+            old_figure = self.board[x2][y2].figure
+            old_color = self.board[x2][y2].color
+            self.board[x1][y1] = self.Cell(x1, y1)
+
+            if (x2 == 0 or x2 == 7) and figure == "pawn":
+                figure = "queen"
+
+            self.board[x2][y2] = self.Cell(x2, y2, figure, color)
+
+            white_moves, black_moves = self.get_possible_moves()
+
+            if self.check(cnt):
+                figure = fig.figure
+                color = fig.color
+                self.board[x1][y1] = self.Cell(x1, y1, figure, color)
+                self.board[x2][y2] = self.Cell(x2, y2, old_figure, old_color)
+
+                white_moves, black_moves = self.get_possible_moves()
+
+                return False
+
+            else:
+                # for x in range(8):
+                #     for fig1 in self.board[x]:
+                #         print(fig1.color, fig1.figure, fig1.x, fig.y)
+                #         print(fig1.moves)
+                #
+                self.print_board()
+
+                return True
+
+        else:
+            return False
 
     def print_board(self):
         for i in range(8):
             for fig in self.board[i]:
                 if fig.figure is None:
-                    print("none", end=' ')
+                    print(" __ ", end=' ')
                 else:
                     print(fig.figure[:4], end=' ')
             print()
+        print()
 
 
 if __name__ == "__main__":
     Board = Chess()
+    cnt = 0
     while True:
-        x, y, x1, y1 = [int(i) for i in input().split()]
-        Board.make_move(x, y, x1, y1)
+        pos1, pos2 = [i for i in input().split()]
+        Board.make_move(pos1, pos2, cnt)
+        cnt = (cnt + 1) % 2
 
 
+"""
+e2 e4
+e7 e5
+d1 h5
+g8 f6
+h5 e5
 
+e2 e4
+e7 e5
+f2 f4
+d8 h4
+g2 g3
+h4 g3
+h2 g3
+e5 f4
+h1 h2
+f4 g3
+h2 h1
+g3 g2
+a2 a4
+g2 h1
+
+e2 e4
+e7 e5
+f2 f4
+d8 h4
+g2 g3
+h4 g3
+
+
+"""
